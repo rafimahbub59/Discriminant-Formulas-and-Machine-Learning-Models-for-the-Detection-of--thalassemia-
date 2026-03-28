@@ -1,0 +1,27 @@
+import pandas as pd
+
+INPUT_FILE = "cbc_with_indices.xlsx.xlsx"
+OUTPUT_FILE = "cbc_with_index26_output.xlsx"
+
+df = pd.read_excel(INPUT_FILE)
+
+# Force all columns to numeric where possible (errors='coerce' turns bad values into NaN)
+for col in df.columns:
+    df[col] = pd.to_numeric(df[col], errors='ignore')
+
+# ---- Apply all 6 index decision rules ----
+df['vote_RBC']               = (pd.to_numeric(df['RBC (X10^6/µl)'], errors='coerce') > 4.785).astype(int)
+df['vote_Srivastava']        = (pd.to_numeric(df['Srivastav'], errors='coerce') < 4.53).astype(int)
+df['vote_Alparslan']         = (pd.to_numeric(df['Alparslan'], errors='coerce') < 33.74751).astype(int)
+df['vote_Hisham']            = (pd.to_numeric(df['Hisham'], errors='coerce') < 75.49489).astype(int)
+df['vote_Kerman II']         = (pd.to_numeric(df['Kerman II'], errors='coerce') < 97.76744).astype(int)
+df['vote_RavanbakhshF1']   = (pd.to_numeric(df['RavanbakhshF1'], errors='coerce') < 2.147489).astype(int)
+
+
+# ---- Calculate DF6 ----
+vote_cols = [c for c in df.columns if c.startswith('vote_')]
+df['DF6'] = df[vote_cols].sum(axis=1)
+
+
+df.to_excel(OUTPUT_FILE, index=False)
+print("✅ Done! Results saved to", OUTPUT_FILE)
