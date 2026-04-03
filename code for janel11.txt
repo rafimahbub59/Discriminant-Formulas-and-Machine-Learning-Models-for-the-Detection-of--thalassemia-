@@ -1,0 +1,38 @@
+import pandas as pd
+
+# Input and output
+INPUT_FILE = "cbc_with_indices.xlsx.xlsx"
+OUTPUT_FILE = "cbc_with_janel11_output.xlsx"
+
+# Load file
+df = pd.read_excel(INPUT_FILE)
+
+# Convert columns to numeric
+for col in ['RBC (X10^6/µl)','Mentzer','Shine and Lal (S&L)','England and Fraser (E&F)',
+            'Srivastav','Green and King (G&K)','Bessman','Jayabose',
+            'Ricerca','Ehsani','Sirdah']:
+    df[col] = pd.to_numeric(df[col], errors='coerce')
+
+# Apply Janel 11 cutoffs (vote = 1 if βTT, else 0)
+df['vote_RBC']        = (df['RBC (X10^6/µl)'] > 4.785).astype(int)
+df['vote_Mentzer']    = (df['Mentzer'] < 14.85).astype(int)
+df['vote_ShineLal']   = (df['Shine and Lal (S&L)'] < 1020).astype(int)
+df['vote_EngFraser']  = (df['England and Fraser (E&F)'] < 8.4).astype(int)
+df['vote_Srivastava'] = (df['Srivastava'] < 4.53).astype(int)
+df['vote_GreenKing']  = (df['Green and King (G&K)'] < 65.31).astype(int)
+df['vote_Bessman']    = (df['Bessman'] > 15.2).astype(int)
+df['vote_Jayabose']   = (df['Jayabose'] < 228.85).astype(int)
+df['vote_Ricerca']    = (df['Ricerca'] < 3.2).astype(int)
+df['vote_Ehsani']     = (df['Ehsani'] < 22.5).astype(int)
+df['vote_Sirdah']     = (df['Sirdah'] < 30.79).astype(int)
+
+# Sum up Janel 11 votes
+vote_cols = [c for c in df.columns if c.startswith('vote_')]
+df['Janel 11 Score'] = df[vote_cols].sum(axis=1)
+
+# Final classification
+df['Classification_Janel11'] = df['Janel 11 Score'].apply(lambda x: "βTT" if x >= 8 else "IDA")
+
+# Save result
+df.to_excel(OUTPUT_FILE, index=False)
+print("✅ Done! Results saved to", OUTPUT_FILE)

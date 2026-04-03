@@ -1,0 +1,48 @@
+import pandas as pd
+
+INPUT_FILE = "cbc_with_indices.xlsx.xlsx"
+OUTPUT_FILE = "cbc_with_index26_output.xlsx"
+
+df = pd.read_excel(INPUT_FILE)
+
+# Force all columns to numeric where possible (errors='coerce' turns bad values into NaN)
+for col in df.columns:
+    df[col] = pd.to_numeric(df[col], errors='ignore')
+
+# ---- Apply all 26 index decision rules ----
+df['vote_EnglandFraser']   = (pd.to_numeric(df['England and Fraser (E&F)'], errors='coerce') < 8.4).astype(int)
+df['vote_RBC']             = (pd.to_numeric(df['RBC (X10^6/µl)'], errors='coerce') > 4.785).astype(int)
+df['vote_Mentzer']         = (pd.to_numeric(df['Mentzer'], errors='coerce') < 14.83).astype(int)
+df['vote_Srivastava']      = (pd.to_numeric(df['Srivastava'], errors='coerce') < 4.53).astype(int)
+df['vote_ShineLal']        = (pd.to_numeric(df['Shine and Lal (S&L)'], errors='coerce') < 965.41).astype(int)
+df['vote_Bessman']         = (pd.to_numeric(df['Bessman'], errors='coerce') > 15.2).astype(int)
+df['vote_Ricerca']         = (pd.to_numeric(df['Ricerca'], errors='coerce') < 3.2).astype(int)
+df['vote_GreenKing']       = (pd.to_numeric(df['Green and King (G&K)'], errors='coerce') < 65.31).astype(int)
+df['vote_DasGupta']        = (pd.to_numeric(df['Das Gupta'], errors='coerce') > 0.55).astype(int)
+df['vote_Jayabose']        = (pd.to_numeric(df['Jayabose'], errors='coerce') < 228.85).astype(int)
+df['vote_Telmissani_MCHD'] = (pd.to_numeric(df['TI (MCHD)'], errors='coerce') < 0.32).astype(int)
+df['vote_Telmissani_MDHL'] = (pd.to_numeric(df['TI (MDHL)'], errors='coerce') > 1.5).astype(int)
+df['vote_HuberHerklotz']   = (pd.to_numeric(df['Huber– Herklotz'], errors='coerce') < 24.5).astype(int)
+df['vote_KermanI']         = (pd.to_numeric(df['Kerman I'], errors='coerce')< 326.5).astype(int)
+df['vote_KermanII']        = (pd.to_numeric(df['Kerman II'], errors='coerce') < 97.7).astype(int)
+df['vote_Sirdah']          = (pd.to_numeric(df['Sirdah'], errors='coerce') < 30.79).astype(int)
+df['vote_Ehsani']          = (pd.to_numeric(df['Ehsani'], errors='coerce') < 22.5).astype(int)
+df['vote_Keikhaei']        = (pd.to_numeric(df['Keikhaei'], errors='coerce') < 22.9).astype(int)
+df['vote_Nishad']          = (pd.to_numeric(df['Nishad'], errors='coerce') < 60.1).astype(int)
+df['vote_Wongprachum']     = (pd.to_numeric(df['Wongprachum'], errors='coerce') < 131.3).astype(int)
+df['vote_Sehgal']          = (pd.to_numeric(df['Sehgal'], errors='coerce') < 976.4).astype(int)
+df['vote_Pornprasert']     = (pd.to_numeric(df['Pornprasert'], errors='coerce') < 32).astype(int)
+df['vote_Sirachainan']     = (pd.to_numeric(df['Sirachainan'], errors='coerce') > 12.56).astype(int)
+df['vote_Bordbar']         = (pd.to_numeric(df['Bordbar'], errors='coerce') > 58.4).astype(int)
+df['vote_MatosCarvalho']   = (pd.to_numeric(df['Matos and Carvalho(M&C)'], errors='coerce') > 23.3).astype(int)
+df['vote_Cruise']          = (pd.to_numeric(df['Cruise'], errors='coerce') >= 46.86).astype(int)
+
+# ---- Calculate Index26 ----
+vote_cols = [c for c in df.columns if c.startswith('vote_')]
+df['Index 26'] = df[vote_cols].sum(axis=1)
+
+# Final classification
+df['Classification'] = df['Index 26'].apply(lambda x: "βTT" if x >= 16 else "IDA")
+
+df.to_excel(OUTPUT_FILE, index=False)
+print("✅ Done! Results saved to", OUTPUT_FILE)
